@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Obrolan</title>
+  <!-- r=oNVbmxMLxvsQpAke&u=bas& -->
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: #d1d7db;
+      color: #111b21;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 900px;
+      height: 100dvh;
+      background-color: #efeae2;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 6px 18px rgba(11,20,26,0.05);
+    }
+    .chat-header {
+      background-color: #f0f2f5;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e9edef;
+    }
+    .chat-header h4 { 
+      color: #485055;
+    }
+    .chat-header p {
+      font-size: 12px;
+      color: #667781;
+    }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: #efeae2;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 0);
+      background-size: 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .message {
+      max-width: 65%;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14.2px;
+      position: relative;
+      word-wrap: break-word;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 1px 0.5px rgba(11,20,26,0.13);
+    }
+    .message.sent {
+      align-self: flex-end;
+      background-color: #d9fdd3;
+      color: #111b21;
+      border-top-right-radius: 0;
+    }
+    .message.received {
+      align-self: flex-start;
+      background-color: #ffffff;
+      color: #111b21;
+      border-top-left-radius: 0;
+    }
+    .message-user {
+      font-size: 11px;
+      font-weight: bold;
+      color: #008069;
+    }
+    .message.sent .message-user {
+      color: #128c7e;
+    }
+    .reply-context {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-left: 4px solid #00a884;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .reply-context .reply-user {
+      font-weight: bold;
+      color: #008069;
+    }
+    .message-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    .message-time {
+      font-size: 10px;
+      color: #667781;
+    }
+    .action-btn {
+      background: none;
+      border: none;
+      color: #667781;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .action-btn:hover {
+      color: #111b21;
+    }
+    .action-btn.delete:hover {
+      color: #ea0038;
+    }
+    .reply-preview {
+      background-color: #f0f2f5;
+      padding: 8px 16px;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #00a884;
+      font-size: 13px;
+    }
+    .reply-preview.active {
+      display: flex;
+    }
+    .reply-preview-close {
+      cursor: pointer;
+      color: #667781;
+      font-size: 16px;
+    }
+    .chat-input-container {
+      background-color: #f0f2f5;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chat-input-container input {
+      flex: 1;
+      background-color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #111b21;
+      font-size: 15px;
+      outline: none;
+    }
+    .chat-input-container button {
+      background-color: #00a884;
+      border: none;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .chat-input-container button:hover {
+      background-color: #008069;
+    }
+    .error-screen {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #cbd5e1;
+    }
+    .profile-info h3 {
+      font-size: 16px;
+      color: #111b21;
+    }
+
+    .profile-details {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .profile-details svg {
+      width: 12px;
+      height: 12px;
+      fill: #667781;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .profile-info p {
+      font-size: 12px;
+      color: #667781;
+    } 
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .rotating-svg {
+      animation: spin 1s linear infinite;
+      width: 16px;
+      height: 16px;
+      fill: #667781;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .chat-loader {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+    .chat-loader svg {
+      width: 40px;
+      height: 40px;
+      fill: #485055;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body> 
+
+  <div id="error-screen" class="error-screen">
+    <h2 style="color: #ea0038; margin-bottom: 10px;">Error</h2>
+    <p id="error-message" style="color: #667781;"></p>
+  </div>
+
+  <div id="app" class="chat-container"> 
+    <div class="chat-header">
+        <div class="header-profile">
+            <img id="profile-img" class="profile-pic">
+            <div class="profile-info">
+                <h4 id="room-display"></h4>
+                <div class="profile-details">
+                    <p id="user-display"></p>
+                    <div id="user-logs-container" style="font-size: 11px; color: #667781; display: flex; align-items: center; gap: 6px;">
+                        <!-- Status online dan SVG jam akan muncul dinamis di sini -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-box" class="chat-box"></div>
+
+    <div id="reply-preview" class="reply-preview">
+      <div>
+        <span style="color: #00a884; font-weight: bold;" id="reply-user">User</span>
+        <div id="reply-text" style="color: #667781;">Pesan...</div>
+      </div>
+      <span class="reply-preview-close" onclick="cancelReply()">✕</span>
+    </div>
+
+    <form id="chat-form" class="chat-input-container">
+      <input type="text" id="message-input" placeholder="Ketik pesan" autocomplete="off" required>
+      <button type="submit">Kirim</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
