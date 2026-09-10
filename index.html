@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Obrolan</title>
-  <!-- r=oNVbmxMLxvsQpAke&u=bas& -->
+  <title>Obrolan</title> 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.1/dist/browser-image-compression.js"></script> 
   <style>
     html, body {
       max-width: 100%;
@@ -166,8 +167,8 @@
       background-color: #00a884;
       border: none;
       color: #ffffff;
-      padding: 10px 16px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 4px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -239,7 +240,6 @@
       fill: #485055;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body> 
 
@@ -257,7 +257,7 @@
                 <div class="profile-details">
                     <p id="user-display"></p>
                     <div id="user-logs-container" style="font-size: 11px; color: #667781; display: flex; align-items: center; gap: 6px;">
-                        <!-- Status online dan SVG jam akan muncul dinamis di sini -->
+                        
                     </div>
                 </div>
             </div>
@@ -274,9 +274,21 @@
       <span class="reply-preview-close" onclick="cancelReply()">✕</span>
     </div>
 
-    <form id="chat-form" class="chat-input-container">
-      <input type="text" id="message-input" placeholder="Ketik pesan" autocomplete="off" required>
-      <button type="submit">Kirim</button>
+    <form id="chat-form" class="chat-input-container"> 
+      <input type="file" id="media-input" accept="image/*,video/*" style="display: none;"> 
+      <button type="button" id="attach-btn" title="Kirim Gambar/Video" style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+        <svg style="width: 20px; height: 20px; fill: #54656f;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M160 144C151.2 144 144 151.2 144 160L144 480C144 488.8 151.2 496 160 496L480 496C488.8 496 496 488.8 496 480L496 160C496 151.2 488.8 144 480 144L160 144zM96 160C96 124.7 124.7 96 160 96L480 96C515.3 96 544 124.7 544 160L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 160zM224 192C241.7 192 256 206.3 256 224C256 241.7 241.7 256 224 256C206.3 256 192 241.7 192 224C192 206.3 206.3 192 224 192zM360 264C368.5 264 376.4 268.5 380.7 275.8L460.7 411.8C465.1 419.2 465.1 428.4 460.8 435.9C456.5 443.4 448.6 448 440 448L200 448C191.1 448 182.8 443 178.7 435.1C174.6 427.2 175.2 417.6 180.3 410.3L236.3 330.3C240.8 323.9 248.1 320.1 256 320.1C263.9 320.1 271.2 323.9 275.7 330.3L292.9 354.9L339.4 275.9C343.7 268.6 351.6 264.1 360.1 264.1z"/></svg>
+      </button> 
+      <button type="button" id="record-btn" title="Rekam Suara" style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center;">
+        <svg id="record-icon" style="width: 20px; height: 20px; fill: #54656f;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M224 160C224 107 267 64 320 64C370.3 64 411.6 102.7 415.7 152L360 152C346.7 152 336 162.7 336 176C336 189.3 346.7 200 360 200L416 200L416 248L360 248C346.7 248 336 258.7 336 272C336 285.3 346.7 296 360 296L415.7 296C411.6 345.3 370.4 384 320 384C267 384 224 341 224 288L224 160zM152 224C165.3 224 176 234.7 176 248L176 288C176 367.5 240.5 432 320 432C399.5 432 464 367.5 464 288L464 248C464 234.7 474.7 224 488 224C501.3 224 512 234.7 512 248L512 288C512 385.9 438.7 466.7 344 478.5L344 528L392 528C405.3 528 416 538.7 416 552C416 565.3 405.3 576 392 576L248 576C234.7 576 224 565.3 224 552C224 538.7 234.7 528 248 528L296 528L296 478.5C201.3 466.7 128 385.9 128 288L128 248C128 234.7 138.7 224 152 224z"/></svg>
+      </button>
+
+      <input type="text" id="message-input" placeholder="Ketik pesan" autocomplete="off">
+ 
+      <button type="submit" id="send-btn" >
+        <svg style="width: 15px; height: 15px; fill: #ffffff;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M568.4 37.7C578.2 34.2 589 36.7 596.4 44C603.8 51.3 606.2 62.2 602.7 72L424.7 568.9C419.7 582.8 406.6 592 391.9 592C377.7 592 364.9 583.4 359.6 570.3L295.4 412.3C290.9 401.3 292.9 388.7 300.6 379.7L395.1 267.3C400.2 261.2 399.8 252.3 394.2 246.7C388.6 241.1 379.6 240.7 373.6 245.8L261.2 340.1C252.1 347.7 239.6 349.7 228.6 345.3L70.1 280.8C57 275.5 48.4 262.7 48.4 248.5C48.4 233.8 57.6 220.7 71.5 215.7L568.4 37.7z"/></svg>
+      </button>
+
     </form>
   </div>
 

@@ -29,6 +29,14 @@ const userLogsContainer = document.getElementById("user-logs-container");
 const replyPreview = document.getElementById("reply-preview");
 const replyUser = document.getElementById("reply-user");
 const replyText = document.getElementById("reply-text");
+
+// --- TAMBAHAN ELEMEN & VARIABEL MEDIA ---
+const attachBtn = document.getElementById('attach-btn');
+const mediaInput = document.getElementById('media-input');
+const recordBtn = document.getElementById('record-btn');
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
  
 // Validasi apakah parameter u sesuai dengan USER1 atau USER2
 if (!currentUser || (currentUser !== USER1 && currentUser !== USER2)) {
@@ -80,7 +88,7 @@ async function init() {
 
   chatBox.innerHTML = `
     <div class="chat-loader">
-      <svg class="rotating-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z"/></svg>
+    <svg  class="rotating-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z"/></svg>  
     </div>
   `;
 
@@ -136,13 +144,11 @@ async function fetchUserLogs() {
 
   if (targetLog) {
     const timeStr = formatLastSeen(targetLog.last_seen);
-    // Masukkan SVG jam dan teks status secara bersamaan
     userLogsContainer.innerHTML = `
-      <svg style="width: 12px; height: 12px; fill: #667781; display: inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M528 320C528 434.9 434.9 528 320 528C205.1 528 112 434.9 112 320C112 205.1 205.1 112 320 112C434.9 112 528 205.1 528 320zM64 320C64 461.4 178.6 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320zM296 184L296 320C296 328 300 335.5 306.7 340L402.7 404C413.7 411.4 428.6 408.4 436 397.3C443.4 386.2 440.4 371.4 429.3 364L344 307.2L344 184C344 170.7 333.3 160 320 160C306.7 160 296 170.7 296 184z"/></svg>
+      <svg style="width: 12px; height: 12px; fill: #667781; display: inline-block; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M528 320C528 434.9 434.9 528 320 528C205.1 528 112 434.9 112 320C112 205.1 205.1 112 320 112C434.9 112 528 205.1 528 320zM64 320C64 461.4 178.6 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320zM296 184L296 320C296 328 300 335.5 306.7 340L402.7 404C413.7 411.4 428.6 408.4 436 397.3C443.4 386.2 440.4 371.4 429.3 364L344 307.2L344 184C344 170.7 333.3 160 320 160C306.7 160 296 170.7 296 184z"/></svg>
       <span>${timeStr}</span>
     `;
   } else {
-    // Tanpa SVG jika status masih menunggu
     userLogsContainer.innerHTML = `<span>Menunggu...</span>`;
   }
 }
@@ -168,6 +174,8 @@ async function fetchMessages() {
       content,
       created_at,
       reply_to_id,
+      file_url,
+      file_type,
       parent:reply_to_id ( user_name, content )
     `)
     .eq("room_id", roomId)
@@ -211,6 +219,8 @@ async function loadMoreMessages() {
       content,
       created_at,
       reply_to_id,
+      file_url,
+      file_type,
       parent:reply_to_id ( user_name, content )
     `)
     .eq("room_id", roomId)
@@ -261,6 +271,18 @@ function renderMessage(msg, position = "bottom") {
     `;
   }
 
+  // --- RENDER KONTEN MEDIA (GAMBAR, VIDEO, AUDIO) ---
+  let mediaHTML = "";
+  if (msg.file_url) {
+    if (msg.file_type === 'image') {
+      mediaHTML = `<img src="${msg.file_url}" style="max-width: 100%; border-radius: 6px; margin-top: 4px; cursor: pointer;" onclick="window.open('${msg.file_url}', '_blank')">`;
+    } else if (msg.file_type === 'video') {
+      mediaHTML = `<video src="${msg.file_url}" controls style="max-width: 100%; border-radius: 6px; margin-top: 4px;"></video>`;
+    } else if (msg.file_type === 'audio') {
+      mediaHTML = `<audio src="${msg.file_url}" controls style="margin-top: 4px; max-width: 220px;"></audio>`;
+    }
+  }
+
   let deleteBtn = "";
   if (isSentByMe) {
     deleteBtn = `<button class="action-btn delete" onclick="deleteMessage(${msg.id})">Hapus</button>`;
@@ -269,7 +291,8 @@ function renderMessage(msg, position = "bottom") {
   msgEl.innerHTML = `
     <span class="message-user">${escapeHtml(msg.user_name)}</span>
     ${replyHTML}
-    <div>${escapeHtml(msg.content)}</div>
+    ${mediaHTML}
+    ${msg.content ? `<div>${escapeHtml(msg.content)}</div>` : ''}
     <div class="message-footer">
       <span class="message-time">${timeStr}</span>
       <button class="action-btn" onclick="triggerReply(${msg.id})">Balas</button>
@@ -284,6 +307,7 @@ function renderMessage(msg, position = "bottom") {
   }
 }
 
+// Event Kirim Pesan Teks Biasa
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = messageInput.value.trim();
@@ -305,6 +329,134 @@ chatForm.addEventListener("submit", async (e) => {
     console.error("Gagal mengirim pesan:", error);
   } else {
     await logUserAccess();
+  }
+});
+
+// --- HANDLE UPLOAD GAMBAR & VIDEO ---
+attachBtn.addEventListener('click', () => {
+  mediaInput.click();
+});
+
+mediaInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const isVideo = file.type.startsWith('video');
+  const isImage = file.type.startsWith('image');
+  let fileToUpload = file;
+
+  // Kompresi jika file adalah gambar
+  if (isImage) {
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1280,
+        useWebWorker: true
+      };
+      fileToUpload = await imageCompression(file, options);
+    } catch (error) {
+      console.error('Gagal kompresi gambar, menggunakan file asli:', error);
+    }
+  }
+
+  const fileExt = fileToUpload.name ? fileToUpload.name.split('.').pop() : (isVideo ? 'mp4' : 'jpg');
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = `uploads/${fileName}`;
+
+  const { error: uploadError } = await supabaseClient.storage
+    .from('chat-files')
+    .upload(filePath, fileToUpload);
+
+  if (uploadError) {
+    alert('Gagal mengunggah file: ' + uploadError.message);
+    return;
+  }
+
+  const { data: publicURLData } = supabaseClient.storage
+    .from('chat-files')
+    .getPublicUrl(filePath);
+
+  const fileUrl = publicURLData.publicUrl;
+  const fileType = isVideo ? 'video' : (isImage ? 'image' : 'file');
+
+// Kirim ke database
+  await supabaseClient.from("messages").insert([
+    {
+      room_id: roomId,
+      user_name: currentUser,
+      content: "", // Kosongkan agar tidak ada teks di bawah gambar/video
+      file_url: fileUrl,
+      file_type: fileType,
+      reply_to_id: selectedReplyId
+    }
+  ]);
+
+  mediaInput.value = '';
+  cancelReply();
+  await logUserAccess();
+});
+
+// --- HANDLE REKAM AUDIO ---
+recordBtn.addEventListener('click', async () => {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+
+        const fileName = `voice_${Date.now()}.webm`;
+        const filePath = `uploads/${fileName}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from('chat-files')
+          .upload(filePath, audioFile);
+
+        if (uploadError) {
+          alert('Gagal mengunggah rekaman suara: ' + uploadError.message);
+          return;
+        }
+
+        const { data: publicURLData } = supabaseClient.storage
+          .from('chat-files')
+          .getPublicUrl(filePath);
+
+        await supabaseClient.from("messages").insert([
+          {
+            room_id: roomId,
+            user_name: currentUser,
+            content: "", // Kosongkan agar tidak ada teks di bawah audio
+            file_url: publicURLData.publicUrl,
+            file_type: 'audio',
+            reply_to_id: selectedReplyId
+          }
+        ]);
+
+        cancelReply();
+        await logUserAccess();
+      };
+
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('record-icon').style.fill = '#ea0038'; // Berubah merah
+      recordBtn.title = "Berhentikan Rekaman";
+    } catch (err) {
+      alert('Tidak dapat mengakses mikrofon. Pastikan izin browser diaktifkan.');
+      console.error(err);
+    }
+  } else {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    isRecording = false;
+    document.getElementById('record-icon').style.fill = '#54656f'; // Kembali abu-abu
+    recordBtn.title = "Rekam Suara";
   }
 });
 
@@ -363,6 +515,8 @@ function subscribeRealtime() {
               content,
               created_at,
               reply_to_id,
+              file_url,
+              file_type,
               parent:reply_to_id ( user_name, content )
             `)
             .eq("id", payload.new.id)
