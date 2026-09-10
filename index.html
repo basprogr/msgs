@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
+<head>  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Obrolan</title> 
@@ -147,34 +147,42 @@
       font-size: 16px;
     }
     .chat-input-container {
-      background-color: #f0f2f5;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .chat-input-container input {
-      flex: 1;
-      background-color: #ffffff;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      color: #111b21;
-      font-size: 15px;
-      outline: none;
-    }
-    .chat-input-container button {
-      background-color: #00a884;
-      border: none;
-      color: #ffffff;
-      padding: 10px;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .chat-input-container button:hover {
-      background-color: #008069;
-    }
+    background-color: #f0f2f5;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chat-input-container input {
+    flex: 1;
+    background-color: #ffffff;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    color: #111b21; 
+    outline: none;
+    min-width: 0; 
+} 
+.chat-input-container button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+ 
+.chat-input-container button#send-btn {
+    background-color: #00a884;
+    width: 50px;
+    height: 30px;
+    border-radius: 20px; /* Membuatnya bulat sempurna */
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0; /* Mencegah tombol ikut menyusut/hilang di layar kecil */
+}
     .error-screen {
       display: none;
       text-align: center;
