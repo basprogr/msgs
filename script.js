@@ -1,22 +1,16 @@
 const SUPABASE_URL = "https://qjwmhtnfowkmwoflwhzy.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_-vCSXzmIWSM9kn7VHWRhjg_g2B5IYXF"; 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); 
-
 const notifySound = new Audio("notify.mp3");
- 
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get("r");
 const currentUser = urlParams.get("u");
-
-// Definisi dua user yang diizinkan dalam percakapan
 const USER1 = 'bas';
 const USER2 = 'dalq';
-
 let selectedReplyId = null;
 let messagesCache = {}; 
 let oldestMessageTime = null; 
 let isLoadingMore = false;    
- 
 const app = document.getElementById("app");
 const errorScreen = document.getElementById("error-screen");
 const errorMessage = document.getElementById("error-message");
@@ -29,23 +23,17 @@ const userLogsContainer = document.getElementById("user-logs-container");
 const replyPreview = document.getElementById("reply-preview");
 const replyUser = document.getElementById("reply-user");
 const replyText = document.getElementById("reply-text");
-
-// --- TAMBAHAN ELEMEN & VARIABEL MEDIA ---
 const attachBtn = document.getElementById('attach-btn');
 const mediaInput = document.getElementById('media-input');
 const recordBtn = document.getElementById('record-btn');
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
- 
-// Validasi apakah parameter u sesuai dengan USER1 atau USER2
 if (!currentUser || (currentUser !== USER1 && currentUser !== USER2)) {
   document.addEventListener("DOMContentLoaded", () => {
     showError("Akses ditolak: User tidak terdaftar dalam percakapan ini.");
   });
-}
-
-// Konfigurasi profil lawan bicara secara dinamis berdasarkan deklarasi di atas
+} 
 let targetName = 'User';
 let profileImgUrl = 'default.jpg';
 
@@ -55,61 +43,51 @@ if (currentUser === USER1) {
 } else if (currentUser === USER2) {
     targetName = USER1;
     profileImgUrl = 'user1.jpg'; 
-}
-
+} 
 document.addEventListener("DOMContentLoaded", () => {
   if (roomId) {
     roomDisplay.textContent = `${roomId}`;
     userDisplay.textContent = targetName;
     document.getElementById('profile-img').src = profileImgUrl;
   }
-});
- 
+}); 
 async function init() {
   if (!roomId || !currentUser) {
     showError("Invalid URL");
     return;
-  }
-
+  } 
   if (currentUser !== USER1 && currentUser !== USER2) {
     showError("Akses ditolak: User tidak terdaftar dalam percakapan ini.");
     return;
-  }
-
+  } 
   const { data: rooms, error } = await supabaseClient
     .from("rooms")
     .select("id")
-    .eq("id", roomId);
-
+    .eq("id", roomId); 
   if (error || !rooms || rooms.length === 0) {
     showError("Room chat tidak ditemukan atau belum terdaftar di database.");
     return;
-  }
-
+  } 
   chatBox.innerHTML = `
     <div class="chat-loader">
     <svg  class="rotating-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z"/></svg>  
     </div>
-  `;
-
+  `; 
   await logUserAccess();
   await fetchMessages();
   await fetchUserLogs();
-  subscribeRealtime();
- 
+  subscribeRealtime(); 
   chatBox.addEventListener("scroll", () => {
     if (chatBox.scrollTop === 0) {
       loadMoreMessages();
     }
   });
-}
-
+} 
 function showError(msg) {
   errorMessage.textContent = msg;
   errorScreen.style.display = "block";
   app.style.display = "none";
-}
-
+} 
 async function logUserAccess() {
   const { error } = await supabaseClient
     .from("user_logs")
@@ -270,8 +248,7 @@ function renderMessage(msg, position = "bottom") {
       </div>
     `;
   }
-
-  // --- RENDER KONTEN MEDIA (GAMBAR, VIDEO, AUDIO) ---
+ 
   let mediaHTML = "";
   if (msg.file_url) {
     if (msg.file_type === 'image') {
@@ -331,8 +308,7 @@ chatForm.addEventListener("submit", async (e) => {
     await logUserAccess();
   }
 });
-
-// --- HANDLE UPLOAD GAMBAR & VIDEO ---
+ 
 attachBtn.addEventListener('click', () => {
   mediaInput.click();
 });
@@ -344,8 +320,7 @@ mediaInput.addEventListener('change', async (e) => {
   const isVideo = file.type.startsWith('video');
   const isImage = file.type.startsWith('image');
   let fileToUpload = file;
-
-  // Kompresi jika file adalah gambar
+ 
   if (isImage) {
     try {
       const options = {
@@ -378,13 +353,12 @@ mediaInput.addEventListener('change', async (e) => {
 
   const fileUrl = publicURLData.publicUrl;
   const fileType = isVideo ? 'video' : (isImage ? 'image' : 'file');
-
-// Kirim ke database
+ 
   await supabaseClient.from("messages").insert([
     {
       room_id: roomId,
       user_name: currentUser,
-      content: "", // Kosongkan agar tidak ada teks di bawah gambar/video
+      content: "", 
       file_url: fileUrl,
       file_type: fileType,
       reply_to_id: selectedReplyId
@@ -395,8 +369,7 @@ mediaInput.addEventListener('change', async (e) => {
   cancelReply();
   await logUserAccess();
 });
-
-// --- HANDLE REKAM AUDIO ---
+ 
 recordBtn.addEventListener('click', async () => {
   if (!isRecording) {
     try {
@@ -432,7 +405,7 @@ recordBtn.addEventListener('click', async () => {
           {
             room_id: roomId,
             user_name: currentUser,
-            content: "", // Kosongkan agar tidak ada teks di bawah audio
+            content: "",  
             file_url: publicURLData.publicUrl,
             file_type: 'audio',
             reply_to_id: selectedReplyId
@@ -445,7 +418,7 @@ recordBtn.addEventListener('click', async () => {
 
       mediaRecorder.start();
       isRecording = true;
-      document.getElementById('record-icon').style.fill = '#ea0038'; // Berubah merah
+      document.getElementById('record-icon').style.fill = '#ea0038'; 
       recordBtn.title = "Berhentikan Rekaman";
     } catch (err) {
       alert('Tidak dapat mengakses mikrofon. Pastikan izin browser diaktifkan.');
@@ -455,7 +428,7 @@ recordBtn.addEventListener('click', async () => {
     mediaRecorder.stop();
     mediaRecorder.stream.getTracks().forEach(track => track.stop());
     isRecording = false;
-    document.getElementById('record-icon').style.fill = '#54656f'; // Kembali abu-abu
+    document.getElementById('record-icon').style.fill = '#54656f'; 
     recordBtn.title = "Rekam Suara";
   }
 });
